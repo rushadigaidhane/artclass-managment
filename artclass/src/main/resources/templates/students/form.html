@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Student Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <th:block th:replace="~{fragments/layout :: head('Student Form')}"></th:block>
+    <style>
+        .form-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) { .form-layout { grid-template-columns: 1fr; } }
+
+        .form-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .form-section-full {
+            grid-column: 1 / -1;
+        }
+
+        .section-head {
+            background: var(--sage);
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-head-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .section-body { padding: 22px; }
+
+        /* Class options grid */
+        .class-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .class-option {
+            display: flex;
+            flex-direction: column;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+
+        .class-option:hover { border-color: var(--rose); }
+        .class-option.selected { border-color: var(--rose); background: #fff5f5; }
+
+        .class-option-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+        }
+
+        .class-option input[type=radio] { display: none; }
+
+        .class-check {
+            width: 18px; height: 18px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            flex-shrink: 0;
+            transition: all 0.15s;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .class-option.selected .class-check {
+            background: var(--rose);
+            border-color: var(--rose);
+        }
+
+        .class-option.selected .class-check::after {
+            content: '';
+            width: 6px; height: 6px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .class-name { font-size: 13px; font-weight: 700; }
+        .class-icon { font-size: 18px; }
+
+        /* Sub-type selector */
+        .subtype-wrap {
+            border-top: 1px solid var(--sage);
+            padding: 10px 14px;
+            display: none;
+        }
+
+        .class-option.has-subtype .subtype-wrap { display: block; }
+
+        .subtype-label { font-size: 11px; color: var(--text-m); font-weight: 600; margin-bottom: 6px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+        .subtype-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .subtype-pill {
+            padding: 4px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+            color: var(--text-m);
+            transition: all 0.15s;
+        }
+
+        .subtype-pill.selected { background: var(--rose); border-color: var(--rose); color: white; }
+
+        /* Fees section */
+        .fees-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 700px) { .fees-grid { grid-template-columns: 1fr 1fr; } }
+
+        .fees-card {
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .fees-card-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-m);
+            margin-bottom: 8px;
+        }
+
+        .fees-card input {
+            background: white;
+        }
+
+        .rupee-wrap { position: relative; }
+        .rupee-symbol {
+            position: absolute;
+            left: 12px; top: 50%;
+            transform: translateY(-50%);
+            font-weight: 700;
+            color: var(--text-m);
+        }
+        .rupee-wrap input { padding-left: 28px; }
+
+        /* Fees complete checkbox */
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: #d1fae5;
+            border: 1.5px solid #6ee7b7;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-row input[type=checkbox] {
+            width: 18px; height: 18px;
+            accent-color: #059669;
+            cursor: pointer;
+        }
+
+        .checkbox-row label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #065f46;
+            cursor: pointer;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* Status toggle */
+        .toggle-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.15s;
+        }
+
+        .toggle-btn.active-selected { border-color: #5ab89a; background: var(--mint); color: #2d7a5c; }
+        .toggle-btn.inactive-selected { border-color: #d0d0d0; background: #f3f3f3; color: var(--text-m); }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand"><div class="brand-icon">🎨</div><div class="brand-name">Shubhangi's<br>Art Class</div><div class="brand-sub">Student Manager</div></div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Main</div>
+            <a th:href="@{/dashboard}" class="nav-link"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+            <a th:href="@{/students}" class="nav-link"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>All Students</a>
+            <a th:href="@{/students/new}" class="nav-link active"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Add Student</a>
+            <div class="nav-section-label">Reports</div>
+            <a th:href="@{/reports/pending-fees}" class="nav-link"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 14l-4-4 4-4"/><path stroke-linecap="round" d="M5 10h11a4 4 0 0 1 0 8h-1"/></svg>Pending Fees</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card"><div class="user-avatar">S</div><div><div class="user-name">Shubhangi</div><div class="user-role">Art Teacher</div></div></div>
+            <form th:action="@{/logout}" method="post"><button type="submit" class="btn-logout">Logout</button></form>
+        </div>
+    </aside>
+
+    <div class="main">
+        <header class="topbar">
+            <h1 class="page-title" th:text="${isEdit} ? 'Edit Student' : 'Add New Student'">Student Form</h1>
+            <a th:href="@{/students}" class="btn btn-ghost btn-sm">← Back to List</a>
+        </header>
+        <div class="content">
+
+            <form th:action="@{/students/save}" th:object="${student}" method="post">
+                <input type="hidden" th:field="*{id}" th:if="${student.id != null}"/>
+                <input type="hidden" th:field="*{studentId}"/>
+                <input type="hidden" name="classSubType" id="classSubTypeInput" th:value="${student.classSubType}"/>
+
+                <div class="form-layout">
+
+                    <!-- ── Personal Details ── -->
+                    <div class="form-section">
+                        <div class="section-head">
+                            <span>👤</span>
+                            <span class="section-head-title">Personal Details</span>
+                        </div>
+                        <div class="section-body">
+                            <div class="form-group">
+                                <label class="field-label">Full Name <span class="field-required">*</span></label>
+                                <input type="text" th:field="*{name}" placeholder="Student's full name" required/>
+                                <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="field-label">Phone Number <span class="field-required">*</span></label>
+                                <input type="tel" th:field="*{phone}" placeholder="+91 98765 43210" required/>
+                                <span class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="field-label">Parent's Phone <span style="color:var(--text-l);font-weight:400;">(Optional)</span></label>
+                                <input type="tel" th:field="*{parentsPhone}" placeholder="Parent's contact number"/>
+                            </div>
+                            <div class="form-group">
+                                <label class="field-label">Enrollment Date</label>
+                                <input type="date" th:field="*{enrollmentDate}"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Status & Timing ── -->
+                    <div class="form-section">
+                        <div class="section-head">
+                            <span>⏰</span>
+                            <span class="section-head-title">Timing & Status</span>
+                        </div>
+                        <div class="section-body">
+                            <div class="form-group">
+                                <label class="field-label">Timing Slot</label>
+                                <input type="text" th:field="*{timingSlot}" placeholder="e.g. Mon-Wed 4:00–5:00 PM"/>
+                                <span class="field-hint">Enter the class schedule for this student</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="field-label">Active Status</label>
+                                <div class="toggle-row">
+                                    <div class="toggle-btn" id="btnActive"
+                                         th:classappend="${student.active == null or student.active} ? ' active-selected' : ''"
+                                         onclick="setStatus(true)">✅ Active</div>
+                                    <div class="toggle-btn" id="btnInactive"
+                                         th:classappend="${student.active != null and !student.active} ? ' inactive-selected' : ''"
+                                         onclick="setStatus(false)">⏸ Inactive</div>
+                                </div>
+                                <input type="hidden" th:field="*{active}" id="activeInput"/>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="field-label">Notes</label>
+                                <textarea th:field="*{notes}" rows="4" placeholder="Any additional notes about this student…"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Class Selection ── -->
+                    <div class="form-section form-section-full">
+                        <div class="section-head">
+                            <span>🎨</span>
+                            <span class="section-head-title">Class Selection <span class="field-required">*</span></span>
+                        </div>
+                        <div class="section-body">
+                            <div class="class-grid" id="classGrid">
+
+                                <!-- Elementary -->
+                                <div class="class-option" data-value="ELEMENTARY" data-subtype="none" onclick="selectClass(this)">
+                                    <div class="class-option-header">
+                                        <div class="class-check"></div>
+                                        <span class="class-icon">🖼️</span>
+                                        <span class="class-name">Elementary</span>
+                                    </div>
+                                </div>
+
+                                <!-- Intermediate -->
+                                <div class="class-option" data-value="INTERMEDIATE" data-subtype="none" onclick="selectClass(this)">
+                                    <div class="class-option-header">
+                                        <div class="class-check"></div>
+                                        <span class="class-icon">📐</span>
+                                        <span class="class-name">Intermediate</span>
+                                    </div>
+                                </div>
+
+                                <!-- Drawing -->
+                                <div class="class-option" data-value="DRAWING" data-subtype="monthly|course" onclick="selectClass(this)">
+                                    <div class="class-option-header">
+                                        <div class="class-check"></div>
+                                        <span class="class-icon">✏️</span>
+                                        <span class="class-name">Drawing</span>
+                                    </div>
+                                    <div class="subtype-wrap">
+                                        <div class="subtype-label">Choose Type</div>
+                                        <div class="subtype-pills">
+                                            <span class="subtype-pill" data-sub="monthly" onclick="selectSubtype(event,'monthly')">Monthly</span>
+                                            <span class="subtype-pill" data-sub="course"  onclick="selectSubtype(event,'course')">Course</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sketching -->
+                                <div class="class-option" data-value="SKETCHING" data-subtype="monthly|course" onclick="selectClass(this)">
+                                    <div class="class-option-header">
+                                        <div class="class-check"></div>
+                                        <span class="class-icon">🖊️</span>
+                                        <span class="class-name">Sketching</span>
+                                    </div>
+                                    <div class="subtype-wrap">
+                                        <div class="subtype-label">Choose Type</div>
+                                        <div class="subtype-pills">
+                                            <span class="subtype-pill" data-sub="monthly" onclick="selectSubtype(event,'monthly')">Monthly</span>
+                                            <span class="subtype-pill" data-sub="course"  onclick="selectSubtype(event,'course')">Course</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mehendi -->
+                                <div class="class-option" data-value="MEHENDI" data-subtype="normal|bridal" onclick="selectClass(this)">
+                                    <div class="class-option-header">
+                                        <div class="class-check"></div>
+                                        <span class="class-icon">🌿</span>
+                                        <span class="class-name">Mehendi</span>
+                                    </div>
+                                    <div class="subtype-wrap">
+                                        <div class="subtype-label">Choose Type</div>
+                                        <div class="subtype-pills">
+                                            <span class="subtype-pill" data-sub="normal" onclick="selectSubtype(event,'normal')">Normal</span>
+                                            <span class="subtype-pill" data-sub="bridal" onclick="selectSubtype(event,'bridal')">Bridal</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Rangoli -->
+                                <div class="class-option" data-value="RANGOLI" data-subtype="monthly|course" onclick="selectClass(this)">
+                                    <div class="class-option-header">
+                                        <div class="class-check"></div>
+                                        <span class="class-icon">🎪</span>
+                                        <span class="class-name">Rangoli</span>
+                                    </div>
+                                    <div class="subtype-wrap">
+                                        <div class="subtype-label">Choose Type</div>
+                                        <div class="subtype-pills">
+                                            <span class="subtype-pill" data-sub="monthly" onclick="selectSubtype(event,'monthly')">Monthly</span>
+                                            <span class="subtype-pill" data-sub="course"  onclick="selectSubtype(event,'course')">Course</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Craft -->
+                                <div class="class-option" data-value="CRAFT" data-subtype="none" onclick="selectClass(this)">
+                                    <div class="class-option-header">
+                                        <div class="class-check"></div>
+                                        <span class="class-icon">✂️</span>
+                                        <span class="class-name">Craft</span>
+                                    </div>
+                                </div>
+
+                                <!-- BFA Entrance -->
+                                <div class="class-option" data-value="BFA_ENTRANCE" data-subtype="none" onclick="selectClass(this)">
+                                    <div class="class-option-header">
+                                        <div class="class-check"></div>
+                                        <span class="class-icon">🎓</span>
+                                        <span class="class-name">BFA Entrance</span>
+                                    </div>
+                                </div>
+
+                                <!-- JEE Paper 2 -->
+                                <div class="class-option" data-value="JEE_PAPER2" data-subtype="none" onclick="selectClass(this)">
+                                    <div class="class-option-header">
+                                        <div class="class-check"></div>
+                                        <span class="class-icon">📚</span>
+                                        <span class="class-name">JEE Paper 2</span>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <input type="hidden" name="classType" id="classTypeInput" th:value="${student.classType}"/>
+                            <p id="classError" style="color:#b91c1c;font-size:12px;margin-top:8px;display:none;">Please select a class.</p>
+                        </div>
+                    </div>
+
+                    <!-- ── Fees ── -->
+                    <div class="form-section form-section-full">
+                        <div class="section-head">
+                            <span>💰</span>
+                            <span class="section-head-title">Fees Details</span>
+                        </div>
+                        <div class="section-body">
+                            <div class="fees-grid">
+                                <div class="fees-card">
+                                    <div class="fees-card-label">Class Fees</div>
+                                    <div class="rupee-wrap">
+                                        <span class="rupee-symbol">₹</span>
+                                        <input type="number" th:field="*{classFees}" placeholder="0" min="0" step="0.01" oninput="updatePending()"/>
+                                    </div>
+                                </div>
+                                <div class="fees-card">
+                                    <div class="fees-card-label">Advance Fees Paid</div>
+                                    <div class="rupee-wrap">
+                                        <span class="rupee-symbol">₹</span>
+                                        <input type="number" th:field="*{advanceFees}" placeholder="0" min="0" step="0.01" oninput="updatePending()"/>
+                                    </div>
+                                </div>
+                                <div class="fees-card">
+                                    <div class="fees-card-label">Completion Fees</div>
+                                    <div class="rupee-wrap">
+                                        <span class="rupee-symbol">₹</span>
+                                        <input type="number" th:field="*{completionFees}" placeholder="0" min="0" step="0.01" oninput="updatePending()"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pending summary -->
+                            <div style="margin-top:16px;padding:14px 18px;background:var(--cream);border-radius:10px;display:flex;gap:32px;flex-wrap:wrap;">
+                                <div>
+                                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-m);margin-bottom:3px;">Total Fees</div>
+                                    <div style="font-size:18px;font-weight:700;" id="totalDisplay">₹0</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-m);margin-bottom:3px;">Pending Amount</div>
+                                    <div style="font-size:18px;font-weight:700;color:#b91c1c;" id="pendingDisplay">₹0</div>
+                                </div>
+                            </div>
+
+                            <!-- Fees Complete Checkbox -->
+                            <div style="margin-top:16px;">
+                                <label class="checkbox-row">
+                                    <input type="checkbox" th:field="*{feesComplete}" id="feesCompleteCheck"/>
+                                    <label for="feesCompleteCheck">✅ Mark Fees as Complete / Fully Paid</label>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions" style="margin-top:20px;">
+                    <button type="submit" class="btn btn-primary" onclick="return validateClass()">
+                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+                        Save Student
+                    </button>
+                    <a th:href="@{/students}" class="btn btn-ghost">Cancel</a>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Class selection ──────────────────────────────
+const savedClass   = /*[[${student.classType}]]*/ null;
+const savedSubtype = /*[[${student.classSubType}]]*/ null;
+
+document.querySelectorAll('.class-option').forEach(opt => {
+    if (opt.dataset.value === (savedClass ? savedClass.toString() : null)) {
+        opt.classList.add('selected');
+        if (opt.dataset.subtype !== 'none') opt.classList.add('has-subtype');
+        // restore subtype pill
+        if (savedSubtype) {
+            opt.querySelectorAll('.subtype-pill').forEach(p => {
+                if (p.dataset.sub === savedSubtype) p.classList.add('selected');
+            });
+        }
+    }
+});
+
+function selectClass(el) {
+    document.querySelectorAll('.class-option').forEach(o => {
+        o.classList.remove('selected', 'has-subtype');
+    });
+    el.classList.add('selected');
+    if (el.dataset.subtype !== 'none') el.classList.add('has-subtype');
+    document.getElementById('classTypeInput').value = el.dataset.value;
+    document.getElementById('classSubTypeInput').value = '';
+    el.querySelectorAll('.subtype-pill').forEach(p => p.classList.remove('selected'));
+    document.getElementById('classError').style.display = 'none';
+}
+
+function selectSubtype(e, val) {
+    e.stopPropagation();
+    const wrap = e.target.closest('.class-option');
+    wrap.querySelectorAll('.subtype-pill').forEach(p => p.classList.remove('selected'));
+    e.target.classList.add('selected');
+    document.getElementById('classSubTypeInput').value = val;
+}
+
+function validateClass() {
+    if (!document.getElementById('classTypeInput').value) {
+        document.getElementById('classError').style.display = 'block';
+        document.getElementById('classError').scrollIntoView({behavior:'smooth'});
+        return false;
+    }
+    return true;
+}
+
+// ── Status toggle ────────────────────────────────
+function setStatus(active) {
+    document.getElementById('activeInput').value = active;
+    document.getElementById('btnActive').className   = 'toggle-btn' + (active ? ' active-selected' : '');
+    document.getElementById('btnInactive').className = 'toggle-btn' + (!active ? ' inactive-selected' : '');
+}
+
+// init status
+const currentActive = /*[[${student.active}]]*/ true;
+setStatus(currentActive !== false);
+
+// ── Fees calculator ──────────────────────────────
+function updatePending() {
+    const cls  = parseFloat(document.querySelector('[name=classFees]').value)     || 0;
+    const adv  = parseFloat(document.querySelector('[name=advanceFees]').value)   || 0;
+    const comp = parseFloat(document.querySelector('[name=completionFees]').value)|| 0;
+    const total   = cls + comp;
+    const pending = Math.max(0, total - adv);
+    document.getElementById('totalDisplay').textContent   = '₹' + total.toLocaleString('en-IN');
+    document.getElementById('pendingDisplay').textContent = '₹' + pending.toLocaleString('en-IN');
+}
+updatePending();
+</script>
+</body>
+</html>

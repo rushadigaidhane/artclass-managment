@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Students</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <th:block th:replace="~{fragments/layout :: head('Students')}"></th:block>
+    <style>
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 320px; }
+        .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-l); }
+        .search-input {
+            width: 100%;
+            background: white;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            padding: 9px 14px 9px 38px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 13.5px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: var(--rose); }
+        .search-input::placeholder { color: var(--text-l); }
+
+        select.filter-select {
+            background: white;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            padding: 9px 14px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 13.5px;
+            color: var(--text);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .table-card { border-radius: var(--radius); overflow: hidden; }
+
+        .student-name { font-weight: 700; color: var(--text); }
+        .student-id   { font-size: 11px; color: var(--text-l); }
+        .student-phone{ font-size: 12.5px; color: var(--text-m); }
+
+        .actions-cell { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+        .timing-slot {
+            background: var(--sage);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 11px;
+            color: var(--text-m);
+            white-space: nowrap;
+        }
+
+        .fees-info { font-size: 12px; }
+        .fees-pending { color: #b91c1c; font-weight: 700; }
+        .fees-ok      { color: #065f46; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand"><div class="brand-icon">🎨</div><div class="brand-name">Shubhangi's<br>Art Class</div><div class="brand-sub">Student Manager</div></div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Main</div>
+            <a th:href="@{/dashboard}" class="nav-link"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+            <a th:href="@{/students}" class="nav-link active"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>All Students</a>
+            <a th:href="@{/students/new}" class="nav-link"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Add Student</a>
+            <div class="nav-section-label">Reports</div>
+            <a th:href="@{/reports/pending-fees}" class="nav-link"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 14l-4-4 4-4"/><path stroke-linecap="round" d="M5 10h11a4 4 0 0 1 0 8h-1"/></svg>Pending Fees</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card"><div class="user-avatar">S</div><div><div class="user-name">Shubhangi</div><div class="user-role">Art Teacher</div></div></div>
+            <form th:action="@{/logout}" method="post"><button type="submit" class="btn-logout"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</button></form>
+        </div>
+    </aside>
+
+    <div class="main">
+        <header class="topbar">
+            <h1 class="page-title">All Students</h1>
+            <a th:href="@{/students/new}" class="btn btn-primary btn-sm">+ Add Student</a>
+        </header>
+        <div class="content">
+
+            <!-- Alerts -->
+            <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+            <div class="alert alert-error"   th:if="${error}"   th:text="${error}"></div>
+
+            <!-- Toolbar -->
+            <form th:action="@{/students}" method="get" class="toolbar">
+                <div class="search-wrap">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+                    <input type="text" class="search-input" name="q" placeholder="Search name, ID, phone…" th:value="${q}"/>
+                </div>
+                <select name="classType" class="filter-select" onchange="this.form.submit()">
+                    <option value="">All Classes</option>
+                    <option th:each="ct : ${classTypes}"
+                            th:value="${ct.name()}"
+                            th:text="${ct.displayName}"
+                            th:selected="${ct.name() == classType}">
+                    </option>
+                </select>
+                <button type="submit" class="btn btn-mint btn-sm">Search</button>
+                <a th:href="@{/students}" class="btn btn-ghost btn-sm" th:if="${q != null or classType != null}">Clear</a>
+            </form>
+
+            <!-- Count -->
+            <p style="font-size:13px;color:var(--text-m);margin-bottom:14px;"
+               th:text="${#lists.size(students)} + ' student(s) found'"></p>
+
+            <!-- Table -->
+            <div class="card table-card">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Phone</th>
+                                <th>Class</th>
+                                <th>Timing</th>
+                                <th>Fees</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s : ${students}">
+                                <td>
+                                    <div class="student-name" th:text="${s.name}">-</div>
+                                    <div class="student-id" th:text="${s.studentId}">-</div>
+                                </td>
+                                <td>
+                                    <div class="student-phone" th:text="${s.phone}">-</div>
+                                    <div class="student-phone" th:if="${s.parentsPhone}" th:text="'P: ' + ${s.parentsPhone}">-</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight:600;font-size:13px;" th:text="${s.classType?.displayName}">-</div>
+                                    <div style="font-size:11px;color:var(--text-l);" th:text="${s.classSubType}">-</div>
+                                </td>
+                                <td>
+                                    <span class="timing-slot" th:if="${s.timingSlot}" th:text="${s.timingSlot}">-</span>
+                                    <span style="color:var(--text-l);font-size:12px;" th:unless="${s.timingSlot}">—</span>
+                                </td>
+                                <td>
+                                    <span class="badge" th:classappend="${s.feesComplete} ? 'badge-paid' : 'badge-pending'"
+                                          th:text="${s.feesComplete} ? '✓ Paid' : '⚠ Pending'">-</span>
+                                    <div class="fees-info fees-pending" th:unless="${s.feesComplete}"
+                                         th:text="'₹' + ${#numbers.formatDecimal(s.pendingFees,1,'COMMA',0,'POINT')} + ' due'">-</div>
+                                </td>
+                                <td>
+                                    <span class="badge" th:classappend="${s.active} ? 'badge-active' : 'badge-inactive'"
+                                          th:text="${s.active} ? '● Active' : '○ Inactive'">-</span>
+                                </td>
+                                <td>
+                                    <div class="actions-cell">
+                                        <a th:href="@{'/students/' + ${s.id}}" class="btn btn-ghost btn-sm">View</a>
+                                        <a th:href="@{'/students/edit/' + ${s.id}}" class="btn btn-mint btn-sm">Edit</a>
+                                        <form th:action="@{'/students/toggle/' + ${s.id}}" method="post" style="display:inline;">
+                                            <input type="hidden" name="redirect" value="/students"/>
+                                            <button type="submit" class="btn btn-sm"
+                                                    th:classappend="${s.active} ? 'btn-danger' : 'btn-primary'"
+                                                    th:text="${s.active} ? 'Deactivate' : 'Activate'">Toggle</button>
+                                        </form>
+                                        <form th:action="@{'/students/delete/' + ${s.id}}" method="post" style="display:inline;"
+                                              onsubmit="return confirm('Delete ' + /*[[${s.name}]]*/ '' + '? This cannot be undone.')">
+                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(students)}">
+                                <td colspan="7" style="text-align:center;padding:48px;color:var(--text-l);font-style:italic;">
+                                    No students found. <a th:href="@{/students/new}" style="color:var(--rose);">Add your first student →</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

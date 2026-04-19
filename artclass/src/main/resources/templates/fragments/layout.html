@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${title} + ' — Shubhangi Art Class'">Art Class</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --mint:    #C0E1D2;
+            --sage:    #E5EEE4;
+            --cream:   #F6F4E8;
+            --rose:    #DC9B9B;
+            --rose-d:  #c97f7f;
+            --rose-l:  #f0c4c4;
+            --text:    #3a3028;
+            --text-m:  #7a6b60;
+            --text-l:  #b0a090;
+            --white:   #ffffff;
+            --border:  #ddd8cc;
+            --shadow:  rgba(58,48,40,0.08);
+            --radius:  14px;
+            --radius-s: 8px;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ──────────────────────────── */
+        .layout { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 240px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 100;
+            box-shadow: 2px 0 16px var(--shadow);
+        }
+
+        .sidebar-brand {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--mint), var(--rose-l));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-m);
+            letter-spacing: 0.08em;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-l);
+            padding: 12px 12px 6px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: var(--radius-s);
+            color: var(--text-m);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.18s;
+        }
+
+        .nav-link:hover { background: var(--sage); color: var(--text); }
+        .nav-link.active { background: var(--mint); color: var(--text); font-weight: 700; }
+        .nav-link svg { flex-shrink: 0; }
+
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-s);
+            background: var(--sage);
+            margin-bottom: 8px;
+        }
+
+        .user-avatar {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--rose), var(--rose-d));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .user-name  { font-size: 13px; font-weight: 700; color: var(--text); }
+        .user-role  { font-size: 11px; color: var(--text-m); }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 9px;
+            border-radius: var(--radius-s);
+            background: none;
+            border: 1.5px solid var(--border);
+            color: var(--text-m);
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .btn-logout:hover { background: var(--rose-l); border-color: var(--rose); color: var(--rose-d); }
+
+        /* ── Main Content ─────────────────────── */
+        .main {
+            margin-left: 240px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .content { padding: 32px; }
+
+        /* ── Alerts ─────────────────────────── */
+        .alert {
+            padding: 12px 18px;
+            border-radius: var(--radius-s);
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-success { background: var(--mint); color: var(--text); border-left: 4px solid #5ab89a; }
+        .alert-error   { background: var(--rose-l); color: #8b3030; border-left: 4px solid var(--rose); }
+
+        /* ── Cards ───────────────────────────── */
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        /* ── Buttons ─────────────────────────── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 9px 18px;
+            border-radius: var(--radius-s);
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 700;
+            cursor: pointer; text-decoration: none; border: none;
+            transition: all 0.18s;
+        }
+
+        .btn-primary   { background: var(--rose); color: white; box-shadow: 0 3px 12px rgba(220,155,155,0.4); }
+        .btn-primary:hover { background: var(--rose-d); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(220,155,155,0.5); }
+
+        .btn-mint      { background: var(--mint); color: var(--text); }
+        .btn-mint:hover{ background: #aad4c3; transform: translateY(-1px); }
+
+        .btn-ghost     { background: transparent; color: var(--text-m); border: 1.5px solid var(--border); }
+        .btn-ghost:hover { background: var(--sage); color: var(--text); }
+
+        .btn-danger    { background: #fee2e2; color: #b91c1c; border: 1.5px solid #fca5a5; }
+        .btn-danger:hover { background: #fca5a5; }
+
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        /* ── Badge ───────────────────────────── */
+        .badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .badge-active   { background: var(--mint); color: #2d7a5c; }
+        .badge-inactive { background: #f3f3f3; color: var(--text-l); }
+        .badge-paid     { background: #d1fae5; color: #065f46; }
+        .badge-pending  { background: var(--rose-l); color: #8b3030; }
+
+        /* ── Table ───────────────────────────── */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            background: var(--sage);
+            padding: 12px 16px;
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--text-m); text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        tbody tr { border-bottom: 1px solid var(--sage); transition: background 0.12s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #fdfaf5; }
+        tbody td { padding: 13px 16px; font-size: 13.5px; vertical-align: middle; }
+
+        /* ── Form Fields ─────────────────────── */
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+        label.field-label {
+            font-size: 12px; font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--text-m);
+        }
+        .field-required { color: var(--rose-d); }
+
+        input[type=text], input[type=tel], input[type=number], input[type=date],
+        select, textarea {
+            width: 100%;
+            background: var(--cream);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-s);
+            padding: 11px 14px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--rose);
+            box-shadow: 0 0 0 3px rgba(220,155,155,0.2);
+            background: var(--white);
+        }
+
+        input::placeholder { color: var(--text-l); }
+        .field-hint { font-size: 11px; color: var(--text-l); }
+        .field-error { font-size: 12px; color: #b91c1c; }
+
+        /* ── Responsive ──────────────────────── */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main { margin-left: 0; }
+        }
+    </style>
+</head>
+
+<body th:fragment="layout(title, content)">
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">🎨</div>
+            <div class="brand-name">Abhyuday<br>Art Class</div>
+            <div class="brand-sub">Student Manager</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Main</div>
+            <a th:href="@{/dashboard}"
+               th:classappend="${#httpServletRequest.requestURI == '/dashboard' or #httpServletRequest.requestURI == '/'} ? 'active'"
+               class="nav-link">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Dashboard
+            </a>
+            <a th:href="@{/students}"
+               th:classappend="${#httpServletRequest.requestURI.startsWith('/students')} ? 'active'"
+               class="nav-link">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                All Students
+            </a>
+            <a th:href="@{/students/new}" class="nav-link">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Add Student
+            </a>
+
+            <div class="nav-section-label">Reports</div>
+            <a th:href="@{/reports/pending-fees}"
+               th:classappend="${#httpServletRequest.requestURI.startsWith('/reports')} ? 'active'"
+               class="nav-link">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 14l-4-4 4-4"/><path stroke-linecap="round" d="M5 10h11a4 4 0 0 1 0 8h-1"/></svg>
+                Pending Fees
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">S</div>
+                <div>
+                    <div class="user-name">Shubhangi</div>
+                    <div class="user-role">Art Teacher</div>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn-logout">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Logout
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+        <header class="topbar">
+            <h1 class="page-title" th:text="${title}">Page</h1>
+            <div style="font-size:13px;color:var(--text-m);" th:text="${#temporals.format(#temporals.createNow(), 'EEEE, dd MMMM yyyy')}"></div>
+        </header>
+        <div class="content" th:replace="${content}"><!-- content --></div>
+    </div>
+</div>
+</body>
+</html>

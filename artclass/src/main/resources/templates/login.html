@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login — Shubhangi Art Class</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --mint:  #C0E1D2; --sage: #E5EEE4; --cream: #F6F4E8;
+            --rose:  #DC9B9B; --rose-d: #c97f7f; --rose-l: #f0c4c4;
+            --text:  #3a3028; --text-m: #7a6b60; --text-l: #b0a090;
+            --border: #ddd8cc;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            background: var(--cream);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background-image:
+                radial-gradient(ellipse 60% 50% at 0% 0%, rgba(192,225,210,0.5) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 60% at 100% 100%, rgba(220,155,155,0.3) 0%, transparent 55%);
+        }
+
+        .login-wrap {
+            width: 100%;
+            max-width: 420px;
+            animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* decorative art doodles */
+        .doodle-top {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-8px); }
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(58,48,40,0.1);
+        }
+
+        .card-top {
+            height: 6px;
+            background: linear-gradient(90deg, var(--mint), var(--rose-l), var(--rose));
+        }
+
+        .card-body { padding: 36px; }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-m);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .field { margin-bottom: 18px; }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-m);
+            margin-bottom: 7px;
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-icon {
+            position: absolute;
+            left: 13px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-l);
+            pointer-events: none;
+        }
+
+        input[type=text], input[type=password] {
+            width: 100%;
+            background: var(--cream);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px 12px 40px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--rose);
+            box-shadow: 0 0 0 3px rgba(220,155,155,0.2);
+            background: white;
+        }
+
+        input::placeholder { color: var(--text-l); }
+
+        .alert-error {
+            background: var(--rose-l);
+            border: 1px solid var(--rose);
+            border-radius: 10px;
+            padding: 11px 16px;
+            font-size: 13px;
+            color: #8b3030;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: var(--rose);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s;
+            box-shadow: 0 4px 16px rgba(220,155,155,0.4);
+            margin-top: 8px;
+        }
+
+        .btn-login:hover {
+            background: var(--rose-d);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(220,155,155,0.5);
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--text-l);
+            font-size: 12px;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-wrap">
+    <div class="doodle-top">🎨</div>
+
+    <div class="card">
+        <div class="card-top"></div>
+        <div class="card-body">
+            <h1>Welcome Back</h1>
+            <p class="subtitle">Sign in to manage your art class students</p>
+
+            <div class="alert-error" th:if="${param.error}">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Incorrect username or password. Please try again.
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="field">
+                    <label for="username">Username</label>
+                    <div class="input-wrap">
+                        <svg class="input-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input type="text" id="username" name="username" placeholder="Shubhangi" required autofocus/>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="input-wrap">
+                        <svg class="input-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <input type="password" id="password" name="password" placeholder="••••••" required/>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">Sign In →</button>
+            </form>
+        </div>
+    </div>
+
+    <p class="footer-note">Shubhangi's Art Class · Student Management System</p>
+</div>
+
+</body>
+</html>
