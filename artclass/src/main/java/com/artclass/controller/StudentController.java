@@ -136,7 +136,10 @@ public class StudentController {
     /* ── Pending Fees Report ────────────────────── */
     @GetMapping("/reports/pending-fees")
     public String pendingFeesReport(Model model) {
-        model.addAttribute("students", service.getPendingFees());
+        var students = service.getPendingFees();
+        double totalPending = students.stream().mapToDouble(s -> s.getPendingFees()).sum();
+        model.addAttribute("students", students);
+        model.addAttribute("totalPendingAmount", totalPending);
         return "reports/pending-fees";
     }
 }

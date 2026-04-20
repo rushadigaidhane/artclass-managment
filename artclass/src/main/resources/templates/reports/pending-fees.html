@@ -41,7 +41,7 @@
                 <div>
                     <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#8b3030;margin-bottom:4px;">Total Amount Due</div>
                     <div style="font-size:32px;font-family:'Playfair Display',serif;font-weight:700;color:#8b3030;"
-                         th:text="'₹' + ${#numbers.formatDecimal(students.stream().mapToDouble(s -> s.pendingFees).sum(),1,'COMMA',0,'POINT')}">₹0</div>
+                         th:text="'₹' + ${#numbers.formatDecimal(totalPendingAmount, 1, 'COMMA', 0, 'POINT')}">₹0</div>
                 </div>
             </div>
 
