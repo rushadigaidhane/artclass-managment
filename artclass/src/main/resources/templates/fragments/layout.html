@@ -2,6 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:fragment="head(title)">
+    <link rel="manifest" th:href="@{/manifest.json}"/>
+    <meta name="theme-color" content="#a8d8b0"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-title" content="Abhyuday Art Class"/>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title th:text="${title} + ' — Shubhangi Art Class'">Art Class</title>
@@ -356,7 +360,7 @@
             <div class="user-card">
                 <div class="user-avatar">S</div>
                 <div>
-                    <div class="user-name">Shubhangi</div>
+                    <div class="user-name">Abhyuday</div>
                     <div class="user-role">Art Teacher</div>
                 </div>
             </div>
