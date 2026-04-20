@@ -1,0 +1,2 @@
+self.addEventListener('install', e => e.waitUntil(caches.open('artclass-v1').then(c => c.addAll(['/dashboard']))));
+self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));

@@ -317,7 +317,11 @@
         }
     </style>
 </head>
-
+<script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+</script>
 <body th:fragment="layout(title, content)">
 <div class="layout">
     <!-- Sidebar -->
